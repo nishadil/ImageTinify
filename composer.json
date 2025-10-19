@@ -1,0 +1,28 @@
+{
+  "name": "nishadil/imagetinify",
+  "description": "Open-source PHP image optimization and compression library inspired by TinyPNG.",
+  "type": "library",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "NIshadil.Dev",
+      "email": "opensource@nishadil.dev"
+    }
+  ],
+  "require": {
+    "php": ">=8.1",
+    "symfony/process": "^7.0",
+    "symfony/console": "^7.0"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^10.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "Nishadil\\ImageTinify\\": "src/"
+    }
+  },
+  "bin": [
+    "bin/imagetinify"
+  ]
+}
