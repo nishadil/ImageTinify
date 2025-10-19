@@ -11,6 +11,17 @@ of native PHP methods and optional best-in-class CLI tools (`pngquant`, `zopfli`
 - Laravel/CMS friendly
 - CLI utility
 
+## Tools to install (strongly recommended)
+```bash
+sudo apt update
+sudo apt install -y pngquant zopfli jpegoptim libjpeg-turbo-progs
+```
+
+Confirm installed:
+```bash
+which pngquant zopfli cjpeg jpegoptim cwebp || true
+```
+
 ## Installation
 ```bash
 composer require nishadil/imagetinify
@@ -27,4 +38,9 @@ $tiny->compress('uploads/input.png', 'uploads/input-tinified.png', [
     'quality' => '65-85'
 ]);
 
+```
+
+## CLI
+```bash
+php bin/imagetinify input.png output.png --mode=lossy --quality=80
 ```

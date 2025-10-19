@@ -10,35 +10,47 @@ class JpegCompressor extends BaseCompressor
 {
     protected function doCompress(string $input, string $output): bool
     {
-        $quality = (int)$this->option('quality', 80);
+        $quality = (int)$this->option('quality', 75); // lower default 75
         $mode = $this->option('mode', 'lossy');
 
         // Prefer mozjpeg (cjpeg) if available
-        $cjpeg = $this->which('cjpeg') ?: $this->which('mozjpeg') ?: $this->which('jpegtran');
+        // Use flags recommended for best visual/size tradeoff:
+        // -quality, -progressive, -optimize, -smooth 0, -baseline/none as needed
+        // mozjpeg also supports -sample (set chroma subsampling) but default is fine.
+        $cjpeg = $this->which('cjpeg') ?: $this->which('mozjpeg');
 
         if ($cjpeg !== null && $mode === 'lossy') {
-            // Try cjpeg-style invocation; many systems will have mozjpeg's cjpeg
-            $tmp = $this->tempFile($input, 'cjpeg') ;
+            $tmp = $this->tempFile($input, 'cjpeg');
+
+            // Use mozjpeg-style flags if possible:
             $cmd = [$cjpeg, '-quality', (string)$quality, '-progressive', '-optimize', '-outfile', $tmp, $input];
+
+            // Some mozjpeg builds accept additional flags like -smooth, -trellis, -optimize; keep conservative for compatibility.
             $proc = new Process($cmd);
             $proc->run();
+
+            // if cjpeg failed, fallback to copy and continue to strip/optimize
             if (!$proc->isSuccessful()) {
-                // fallback: use GD
                 copy($input, $tmp);
             }
-            // Strip metadata using jpegoptim if available
+
+            // After creating tmp, run jpegoptim if available to further strip and optionally recompress to max quality
             $jpegoptim = $this->which('jpegoptim');
             if ($jpegoptim !== null) {
-                $proc2 = new Process([$jpegoptim, '--strip-all', $tmp]);
+                // --strip-all removes metadata; --all-progressive ensures progressive; --max=<quality> recompresses if above
+                $proc2 = new Process([$jpegoptim, '--strip-all', '--all-progressive', '--max=' . (string)$quality, $tmp]);
                 $proc2->run();
             } else {
-                MetadataStripper::strip($tmp);
+                // ensure metadata removed by GD fallback stripper
+                \Nishadil\ImageTinify\Utils\MetadataStripper::strip($tmp);
             }
+
+            // Move temp to output
             rename($tmp, $output);
             return file_exists($output);
         }
 
-        // Fallback to GD
+        // Fallback to GD (ensure smaller quality, progressive, and strip metadata)
         if (!extension_loaded('gd')) {
             throw new ImageTinifyException('GD extension not loaded and no external jpeg optimizer found.');
         }
@@ -48,20 +60,26 @@ class JpegCompressor extends BaseCompressor
             throw new ImageTinifyException('Failed to read JPEG with GD.');
         }
 
+        // Make progressive (better for web) and write with lower quality
+        if (function_exists('imageinterlace')) {
+            imageinterlace($img, true);
+        }
+
         imagejpeg($img, $output, $quality);
         imagedestroy($img);
 
-        // Attempt jpegoptim if present to strip metadata
+        // Try jpegoptim to strip metadata and re-optimize size
         $jpegoptim = $this->which('jpegoptim');
         if ($jpegoptim !== null) {
-            $proc = new Process([$jpegoptim, '--strip-all', $output]);
+            $proc = new Process([$jpegoptim, '--strip-all', '--all-progressive', '--max=' . (string)$quality, $output]);
             $proc->run();
         } else {
-            MetadataStripper::strip($output);
+            \Nishadil\ImageTinify\Utils\MetadataStripper::strip($output);
         }
 
         return file_exists($output);
     }
+
 
     protected function which(string $cmd): ?string
     {
