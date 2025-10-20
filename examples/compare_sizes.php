@@ -2,8 +2,8 @@
 require __DIR__ . '/../vendor/autoload.php';
 use Nishadil\ImageTinify\ImageTinify;
 
-$src = __DIR__ . '/../tests/fixtures/test.jpg';
-$out = __DIR__ . '/../tests/_output/manual-tinified.jpg';
+$src = __DIR__ . '/../tests/fixtures/test.png';
+$out = __DIR__ . '/../tests/_output/manual-tinified.png';
 @mkdir(dirname($out), 0775, true);
 
 $tiny = new ImageTinify();
