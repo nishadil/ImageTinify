@@ -40,6 +40,37 @@ $tiny->compress('uploads/input.png', 'uploads/input-tinified.png', [
 
 ```
 
+**Get compressed image as binary string**
+```php
+use Nishadil\ImageTinify\ImageTinify;
+
+$tiny = new ImageTinify();
+$data = $tiny->compress('images/test.jpg', null, ['quality' => 75]);
+
+// $data now contains binary content
+file_put_contents('images/test-tinified-inline.jpg', $data);
+```
+
+**Direct print image**
+```php
+use Nishadil\ImageTinify\ImageTinify;
+
+$tiny = new ImageTinify();
+header('Content-Type: image/jpeg');
+echo $tiny->compress('images/test.jpg', null, ['quality' => 70]);
+```
+
+**Get Base64 encoded image**
+```php
+use Nishadil\ImageTinify\ImageTinify;
+
+$tiny = new ImageTinify();
+
+$binary = $tiny->compress('images/test.png');
+$base64 = base64_encode($binary);
+echo "data:image/png;base64," . $base64;
+```
+
 ## CLI
 ```bash
 php bin/imagetinify input.png output.png --mode=lossy --quality=80
