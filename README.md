@@ -1,11 +1,11 @@
 # Nishadil / ImageTinify
 
 ImageTinify is an open-source PHP image optimization library inspired by TinyPNG/TinyJPG.
-It provides a simple API and CLI to compress PNG, JPEG and WebP images using a combination
+It provides a simple API and CLI to compress PNG, JPEG, AVIF and WebP images using a combination
 of native PHP methods and optional best-in-class CLI tools (`pngquant`, `zopfli`, `mozjpeg`, `jpegoptim`).
 
 ## Features
-- PNG, JPEG, WebP support
+- PNG, JPEG, WebP, AVIF support
 - Lossy and lossless modes
 - Optional integration with external tools
 - Laravel/CMS friendly
@@ -14,12 +14,13 @@ of native PHP methods and optional best-in-class CLI tools (`pngquant`, `zopfli`
 ## Tools to install (strongly recommended)
 ```bash
 sudo apt update
-sudo apt install -y pngquant zopfli jpegoptim libjpeg-turbo-progs
+sudo apt install -y pngquant zopfli jpegoptim libjpeg-turbo-progs cavif libavif-bin imagemagick
 ```
 
 Confirm installed:
 ```bash
 which pngquant zopfli cjpeg jpegoptim cwebp || true
+which cavif avifenc
 ```
 
 ## Installation
@@ -27,8 +28,16 @@ which pngquant zopfli cjpeg jpegoptim cwebp || true
 composer require nishadil/imagetinify
 ```
 
-## Usage
+## Usage (smart mode)
 
+```php
+use Nishadil\ImageTinify\ImageTinify;
+
+$tiny = new ImageTinify();
+$tiny->compress('uploads/input.png', 'uploads/input-tinified.png');
+```
+
+## Usage customized
 ```php
 use Nishadil\ImageTinify\ImageTinify;
 
@@ -37,7 +46,6 @@ $tiny->compress('uploads/input.png', 'uploads/input-tinified.png', [
     'mode' => 'lossy',
     'quality' => '65-85'
 ]);
-
 ```
 
 **Get compressed image as binary string**
